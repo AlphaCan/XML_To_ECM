@@ -1,21 +1,123 @@
 ﻿// XML_To_ECM.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
 
-#include "pch.h"
+#include "XML_To_ECM.h"
 #include <iostream>
+#include "tinyxml2.h"
+
+using namespace std;
+using namespace tinyxml2;
+
+Vendor_t Ven;
+group_t gro;
+#define Nex_DEBUG
+
+#ifdef Nex_DEBUG
+#define Nex_PRINT(format,...) printf(">>Time: %s, Line: %05d, Function: %s: "format"", __TIME__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#else
+#define Nex_PRINT(...) do{}while(0)
+#endif
+
+
+int LoadXMLFile(XMLDocument* doc,const char* xmlpath)
+{
+	if (doc->LoadFile(xmlpath))
+	{
+		Nex_PRINT("load xml file failed\n");
+		return 0;
+	}
+	else
+		Nex_PRINT("load xml OK\n");
+	return 1;
+}
+
+
+int Get_VendorInfo(XMLDocument* doc,Vendor_t Vendor)
+{
+	const char* node;
+	XMLElement* root = doc->RootElement();
+	if (root)
+	{
+		XMLElement* vendor = root->FirstChildElement();
+		if (vendor)
+		{
+			Vendor.FileVersion = vendor->FirstAttribute()->Value();
+			Nex_PRINT("FileVersion = %s\n", Vendor.FileVersion);
+			XMLElement* Id = vendor->FirstChildElement();
+			if (Id)
+			{
+				node = Id->Name();
+				Vendor.Id = (Id->GetText());
+				Nex_PRINT("%s = %s\n", node, Vendor.Id);
+				XMLElement* Name = Id->NextSiblingElement();
+				if (Name)
+				{
+					node = Name->Name();
+					Vendor.Name = Name->GetText();
+					Nex_PRINT("%s = %s\n", node, Vendor.Name);
+					XMLElement* Imagedata = Name->NextSiblingElement();
+					if (Imagedata)
+					{
+						node = Imagedata->Name();
+						Vendor.ImageData = Imagedata->GetText();
+						Nex_PRINT("%s = %s\n", node, Vendor.ImageData);
+					}
+					else
+					{
+						Nex_PRINT("Error: no Vendor ImageData\n");
+						return 0;
+					}
+				}
+				else
+				{
+					Nex_PRINT("Error: no Vendor Name\n");
+					return 0;
+				}
+			}
+			else
+			{
+				Nex_PRINT("Error: no Vendor Id\n");
+				return 0;
+			}
+		}
+		else
+		{
+			Nex_PRINT("Error: no Vendor node\n");
+			return 0;
+		}
+	}
+	else
+	{
+		Nex_PRINT("Error: no root node,please check xml file or LoadFile first\n");
+		return 0;
+	}
+	return 1;
+}
+
+int Get_GroupInfo(XMLDocument* doc,group_t group)
+{
+	const char* node;
+	XMLElement* Type = doc->
+	if (Type)
+	{
+
+	}
+
+	return 1;
+}
+
+
 
 int main()
 {
-    std::cout << "Hello World!\n"; 
+	
+	XMLDocument docm;
+
+	LoadXMLFile(&docm, "../DM3E_V1.70_Example.xml");
+	
+	Get_VendorInfo(&docm, Ven);
+
+	Get_GroupInfo(&docm, gro);
 }
 
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
 
-// 入门提示: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
